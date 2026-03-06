@@ -11,6 +11,11 @@ RUN dnf -y update \
         which \
         ca-certificates \
         shadow-utils \
+        epel-release \
+    # Install HTCondor Python bindings from RPM because I need htcondor >= 25.0 \
+    # but there is no PyPI version of that for Python 3.6.
+    && crb enable \
+    && dnf install -y python3-condor \
     && dnf clean all
 
 # Install StGit from GitHub (the version in the repos is too old)
