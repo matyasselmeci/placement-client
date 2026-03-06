@@ -6,8 +6,8 @@ import datetime
 # import time
 import typing as t
 
-from demo import common  # , device
-from demo.device import DeviceClient, DeviceClientError
+from placement import common  # , device
+from placement.device import DeviceClient, DeviceClientError
 
 
 def init_default_deviceclient() -> DeviceClient:
@@ -48,7 +48,7 @@ def request_token_and_return(dc: t.Optional[DeviceClient] = None) -> t.Optional[
     print(
         f"Token requested; please go to\n\n\t{dc.verification_uri_complete}\n\n"
         f'and use the code "{dc.user_code}".\n'
-        f"The code will expire at {expires_at_dt.strftime(r"%Y-%m-%d %H:%M:%S")}."
+        f"The code will expire at {expires_at_dt.strftime('%Y-%m-%d %H:%M:%S')}."
     )
     try:
         access_token_b = dc.poll_for_token_loop()

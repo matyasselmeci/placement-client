@@ -10,7 +10,7 @@ import typing as t
 import classad2
 import htcondor2
 
-from demo.common import (
+from placement.common import (
     TOKEN_FILENAME,
     T_Constraint,
     T_PathOrStr,

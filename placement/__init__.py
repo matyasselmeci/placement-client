@@ -1,7 +1,7 @@
-from demo.condor import AP, Placement, load_job_description
+from placement.condor import AP, Placement, load_job_description
 
 try:
-    from demo.demowidgets import setup
+    from placement.demowidgets import setup
 except ImportError:
     pass  # widgets not available
 

@@ -9,7 +9,7 @@ import time
 import ipywidgets as widgets
 from IPython.display import display
 
-from demo.common import (
+from placement.common import (
     DEVICE_CLIENT_ID,
     TOKEN_FILENAME,
     WEBAPP_SERVER,
@@ -17,7 +17,7 @@ from demo.common import (
     token_stat,
     write_token,
 )
-from demo.device import DeviceClient, DeviceClientError
+from placement.device import DeviceClient, DeviceClientError
 
 
 class TokenFileUploadWidgets:
