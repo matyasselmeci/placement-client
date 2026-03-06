@@ -19,11 +19,12 @@ Usage:
 """
 
 import logging
+import json
 import time
 import typing as t
-
-import requests
-import urllib3
+import urllib.error
+import urllib.parse
+import urllib.request
 
 _log = logging.getLogger(__name__)
 
@@ -80,6 +81,61 @@ class DeviceClient:
         self.request_in_progress = False
         self.access_token = b""
 
+    def _post_form_json(
+        self,
+        data: t.Mapping[str, str],
+        *,
+        connection_error_cls: t.Type[DeviceClientError],
+        connection_error_message: str,
+    ) -> t.Tuple[int, t.Any]:
+        """Submit form data and parse a JSON response.
+
+        Sends a ``POST`` request to ``self.request_url`` with URL-encoded form
+        data. HTTP error responses are treated as valid responses so callers can
+        inspect the returned status code and payload.
+
+        Args:
+            data: Form fields to encode in the request body.
+            connection_error_cls: Exception type to raise for transport-level
+                failures.
+            connection_error_message: Prefix text for connection failure error
+                messages.
+
+        Returns:
+            A ``(status_code, response_json)`` tuple where ``status_code`` is the
+            HTTP status code and ``response_json`` is the decoded JSON payload.
+
+        Raises:
+            connection_error_cls: If the request cannot be sent or completed due
+                to a connection-level error.
+            DeviceClientUnexpectedOutput: If the response body is not valid UTF-8
+                JSON.
+        """
+        encoded_data = urllib.parse.urlencode(data).encode("utf-8")
+        request = urllib.request.Request(
+            url=self.request_url,
+            data=encoded_data,
+            method="POST",
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        try:
+            with urllib.request.urlopen(request) as response:
+                status_code = response.getcode()
+                body = response.read()
+        except urllib.error.HTTPError as err:
+            status_code = err.code
+            body = err.read()
+        except OSError as err:
+            raise connection_error_cls(
+                "%s: %s" % (connection_error_message, err)
+            ) from err
+
+        try:
+            response_json = json.loads(body.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as err:
+            raise DeviceClientUnexpectedOutput("Invalid JSON: %s" % err)
+        return status_code, response_json
+
     def make_request(self) -> "DeviceClient":
         """
         Starts the session for the device flow by making the initial request
@@ -95,29 +151,18 @@ class DeviceClient:
                 If the message from the server is malformed somehow.
         """
         self._reset_attrs()
-        try:
-            response = requests.post(
-                url=self.request_url,
-                data={"client_id": self.client_id},
-            )
-        except (OSError, urllib3.exceptions.HTTPError) as err:
-            raise DeviceClientInitialRequestError(
-                "Initial request failed to connect to server: %s" % err
-            ) from err
-        try:
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as err:
-            msg = "Initial request resulted in %s" % err
-            try:
-                rj = response.json()
-                msg += "; message from server: %s" % rj["error"]
-            except (TypeError, KeyError, ValueError):
-                pass
+        status_code, rj = self._post_form_json(
+            data={"client_id": self.client_id},
+            connection_error_cls=DeviceClientInitialRequestError,
+            connection_error_message="Initial request failed to connect to server",
+        )
+        if status_code >= 400:
+            msg = "Initial request resulted in HTTP %d" % status_code
+            if isinstance(rj, dict):
+                error = rj.get("error")
+                if error is not None:
+                    msg += "; message from server: %s" % error
             raise DeviceClientError(msg)
-        try:
-            rj = response.json()
-        except requests.exceptions.JSONDecodeError as err:
-            raise DeviceClientUnexpectedOutput("Invalid JSON: %s" % err)
         try:
             self.device_code = rj["device_code"]
             expires_in = rj["expires_in"]
@@ -128,7 +173,7 @@ class DeviceClient:
             self.verification_uri_complete = rj.get(
                 "verification_uri_complete", self.verification_uri
             )
-        except KeyError as err:
+        except (TypeError, KeyError) as err:
             raise DeviceClientUnexpectedOutput("Server response missing %s" % err)
         except ValueError as err:
             raise DeviceClientUnexpectedOutput(
@@ -155,25 +200,20 @@ class DeviceClient:
         """
         if not self.request_in_progress:
             raise DeviceClientRequestNotInProgress()
-        try:
-            response = requests.post(
-                url=self.request_url,
-                data={
-                    "client_id": self.client_id,
-                    "grant_type": self.GRANT_TYPE,
-                    "device_code": self.device_code,
-                },
-            )
-            response_json = response.json()
-        except requests.exceptions.JSONDecodeError as err:
-            raise DeviceClientUnexpectedOutput("Invalid JSON: %s" % err)
-        except (OSError, urllib3.exceptions.HTTPError) as err:
-            raise DeviceClientError("Lost connection to server: %s" % err) from err
+        status_code, response_json = self._post_form_json(
+            data={
+                "client_id": self.client_id,
+                "grant_type": self.GRANT_TYPE,
+                "device_code": self.device_code,
+            },
+            connection_error_cls=DeviceClientError,
+            connection_error_message="Lost connection to server",
+        )
 
-        if response.status_code == 400:
+        if status_code == 400:
             try:
                 error: str = response_json["error"]
-            except KeyError:
+            except (TypeError, KeyError):
                 raise DeviceClientUnexpectedOutput("Unknown failure from server")
             if error == "authorization_pending":
                 return None
@@ -190,12 +230,12 @@ class DeviceClient:
                 "Server responds with unexpected failure %s" % error
             )
 
-        elif response.status_code == 200:
+        elif status_code == 200:
             try:
                 access_token = response_json["access_token"]
                 token_type = response_json["token_type"]
                 # expires_in = response_json.get("expires_in", None)
-            except KeyError as err:
+            except (TypeError, KeyError) as err:
                 raise DeviceClientUnexpectedOutput("Response missing %s" % err)
             if token_type.lower() != "placement":
                 raise DeviceClientUnexpectedOutput(
