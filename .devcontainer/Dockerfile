@@ -1,39 +1,15 @@
-FROM almalinux:8
+FROM mcr.microsoft.com/devcontainers/python:1-3.9-bullseye
 
-# Install AlmaLinux platform Python and common development tools.
-RUN dnf -y update \
-    && dnf -y install \
-        python3-pip \
-        git \
-        curl \
-        sudo \
-        zsh \
-        which \
-        ca-certificates \
-        shadow-utils \
-        epel-release \
-    # Install HTCondor Python bindings from RPM because I need htcondor >= 25.0 \
-    # but there is no PyPI version of that for Python 3.6.
-    && crb enable \
-    && dnf install -y python3-condor \
-    && dnf clean all
+# Prevents Python from writing pyc files and enables unbuffered logs.
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Install StGit from GitHub (the version in the repos is too old)
-RUN set -eux; \
-    arch="$(uname -m)"; \
-    dnf -y install https://github.com/stacked-git/stgit/releases/download/v2.5.5/stgit-2.5.5-1.${arch}.rpm; \
-    dnf clean all
+RUN mv -f /etc/apt/sources.list.d/yarn.list{,.bak} || :
+# ^^ GPG key is broken
 
-# Create a non-root user for VS Code.
-ARG USERNAME=vscode
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
-
-RUN groupadd --gid ${USER_GID} ${USERNAME} \
-    && useradd --uid ${USER_UID} --gid ${USER_GID} -m --shell /bin/zsh ${USERNAME} \
-    && echo "${USERNAME} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} \
-    && chmod 0440 /etc/sudoers.d/${USERNAME}
-
-WORKDIR /workspaces/placement-client
-
-USER ${USERNAME}
+# Install stacked git
+ARG STGIT_VERSION=2.5.5
+RUN ARCH=$(dpkg --print-architecture) && \
+    wget https://github.com/stacked-git/stgit/releases/download/v${STGIT_VERSION}/stgit_${STGIT_VERSION}-1_${ARCH}.deb && \
+    apt install ./stgit_${STGIT_VERSION}-1_${ARCH}.deb && \
+    rm -f ./stgit_${STGIT_VERSION}-1_${ARCH}.deb

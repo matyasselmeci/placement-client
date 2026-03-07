@@ -1,0 +1,2 @@
+# Keep local dev container state out of git.
+/devcontainer.env
