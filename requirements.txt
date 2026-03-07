@@ -1,0 +1,2 @@
+htcondor >= 25.0
+python-dateutil
