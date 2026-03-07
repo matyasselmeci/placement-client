@@ -1,7 +1,6 @@
 import datetime
 import logging
 import math
-import os
 import pathlib
 import sys
 import time
@@ -76,8 +75,8 @@ class AP:
     def query(
         self,
         constraint: T_Constraint = "True",
-        attributes: t.Optional[list[str]] = None,
-    ) -> list[classad2.ClassAd]:
+        attributes: t.Optional[t.List[str]] = None,
+    ) -> t.List[classad2.ClassAd]:
         return self.schedd.query(constraint=constraint, projection=attributes or [])
 
     def get_job_count(self, constraint: T_Constraint = "True") -> int:
@@ -105,18 +104,17 @@ class AP:
 
         state = get_token_state(token_filename)
 
-        match state:
-            case TokenState.MISSING:
-                print("The token file is missing")
-                return
-            case TokenState.UNREADABLE:
-                print("The token file cannot be read or is not a recognizable token")
-                return
-            case TokenState.EXPIRED:
-                print("The token is expired.")
-                return
-            case TokenState.OK:
-                pass
+        if state == TokenState.MISSING:
+            print("The token file is missing")
+            return
+        elif state == TokenState.UNREADABLE:
+            print("The token file cannot be read or is not a recognizable token")
+            return
+        elif state == TokenState.EXPIRED:
+            print("The token is expired.")
+            return
+        elif state == TokenState.OK:
+            pass
 
         try:
             ad = htcondor2.ping(self.schedd_ad, "READ")
