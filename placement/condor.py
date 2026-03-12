@@ -14,7 +14,6 @@ from placement.common import (
     T_Constraint,
     T_PathOrStr,
     TokenState,
-    get_timezone,
     get_token_state,
 )
 
@@ -225,7 +224,6 @@ class Placement:
             suspended=0,
             transferring_input=0,  # this one is not a real code
         )
-        self.tz = get_timezone()
         self._update_status()
 
     @property
@@ -282,8 +280,8 @@ class Placement:
             print("Status unknown")
             return
         update_datetime = datetime.datetime.fromtimestamp(
-            self.status_last_update, tz=self.tz
-        )
+            self.status_last_update
+        ).astimezone()
         update_time_str = update_datetime.strftime("%T")
         print(f"As of {update_time_str}:")
         for status_name, num_in_status in self._status.items():

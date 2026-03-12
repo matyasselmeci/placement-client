@@ -13,7 +13,6 @@ from placement.common import (
     DEVICE_CLIENT_ID,
     TOKEN_FILENAME,
     WEBAPP_SERVER,
-    get_timezone,
     token_stat,
     write_token,
 )
@@ -22,8 +21,6 @@ from placement.device import DeviceClient, DeviceClientError
 
 class TokenFileUploadWidgets:
     def __init__(self):
-        self.tz = get_timezone()
-
         # The description on the FileUpload widget doesn't fit the default
         # layout so set up one of our own.  See
         # https://ipywidgets.readthedocs.io/en/latest/examples/Widget%20Layout.html#examples
@@ -59,7 +56,7 @@ class TokenFileUploadWidgets:
         if not ts:
             self.token_label_widget.value = "Please upload a token"
         else:
-            dt = datetime.datetime.fromtimestamp(ts.st_ctime, tz=self.tz)
+            dt = datetime.datetime.fromtimestamp(ts.st_ctime).astimezone()
             self.token_label_widget.value = f"Token uploaded at {dt:%H:%M}"
 
     def on_token_upload(self, change: dict):
@@ -91,8 +88,6 @@ class TokenFileUploadWidgets:
 
 class DeviceWidgets:
     def __init__(self):
-        self.tz = get_timezone()
-
         # The description on the Button widget doesn't fit the default
         # layout so set up one of our own.  See
         # https://ipywidgets.readthedocs.io/en/latest/examples/Widget%20Layout.html#examples

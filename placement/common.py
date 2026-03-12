@@ -1,4 +1,5 @@
 import base64
+import datetime
 import enum
 import json
 import logging
@@ -8,7 +9,6 @@ import time
 import typing as t
 
 import classad2
-import dateutil
 
 _log = logging.getLogger(__name__)
 
@@ -99,14 +99,6 @@ def get_token_state(
     if expiration < time.time():
         return TokenState.EXPIRED
     return TokenState.OK
-
-
-def get_timezone():
-    maybe_tz = os.environ.get("TIMEZONE", os.environ.get("TZ"))
-    if maybe_tz:
-        return dateutil.tz.gettz(maybe_tz)  # type: ignore
-    else:
-        return dateutil.tz.gettz()  # type: ignore
 
 
 TOKEN_FILENAME = "Placement.token"

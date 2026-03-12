@@ -33,7 +33,6 @@ def request_token_and_return(dc: t.Optional[DeviceClient] = None) -> t.Optional[
     Returns:
         The token as bytes or None.
     """
-    tz = common.get_timezone()
     if not dc:
         dc = init_default_deviceclient()
 
@@ -43,7 +42,7 @@ def request_token_and_return(dc: t.Optional[DeviceClient] = None) -> t.Optional[
         print(f"Request failed: {err}")
         return None
 
-    expires_at_dt = datetime.datetime.fromtimestamp(dc.expires_at, tz)
+    expires_at_dt = datetime.datetime.fromtimestamp(dc.expires_at).astimezone()
 
     print(
         f"Token requested; please go to\n\n\t{dc.verification_uri_complete}\n\n"
