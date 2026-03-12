@@ -43,11 +43,15 @@ def request_token_and_return(dc: t.Optional[DeviceClient] = None) -> t.Optional[
         return None
 
     expires_at_dt = datetime.datetime.fromtimestamp(dc.expires_at).astimezone()
+    if expires_at_dt.tzname() == "UTC":
+        expformat = "%Y-%m-%d %H:%M:%S UTC"
+    else:
+        expformat = "%Y-%m-%d %H:%M:%S"
 
     print(
         f"Token requested; please go to\n\n\t{dc.verification_uri_complete}\n\n"
         f'and use the code "{dc.user_code}".\n'
-        f"The code will expire at {expires_at_dt.strftime('%Y-%m-%d %H:%M:%S')}."
+        f"The code will expire at {expires_at_dt.strftime(expformat)}."
     )
     try:
         access_token_b = dc.poll_for_token_loop()
