@@ -3,6 +3,7 @@ Interactively get a token using the device flow.
 """
 
 import datetime
+
 # import time
 import typing as t
 
@@ -21,20 +22,26 @@ def init_default_deviceclient() -> DeviceClient:
     )
 
 
-def request_token_and_return(dc: t.Optional[DeviceClient] = None) -> t.Optional[bytes]:
+def request_token_and_return(
+    webapp_server: str, client_name: str = "Python Script"
+) -> t.Optional[bytes]:
     """
     Requests a token interactively and returns it as bytes.
 
     Arguments:
-        dc:
-            A DeviceClient used for making and tracking state
-            of the request.
+        webapp_server:
+            The URL of the web application server for the device flow.
+        client_name:
+            The name to use as the client_id for the DeviceClient.
+            Defaults to "Python Script".
 
     Returns:
         The token as bytes or None.
     """
-    if not dc:
-        dc = init_default_deviceclient()
+    dc = DeviceClient(
+        webapp_server=webapp_server,
+        client_id=client_name,
+    )
 
     try:
         dc.make_request()
@@ -64,15 +71,19 @@ def request_token_and_return(dc: t.Optional[DeviceClient] = None) -> t.Optional[
 
 
 def request_token(
-    dc: t.Optional[DeviceClient] = None, token_filename: str = common.TOKEN_FILENAME
+    webapp_server: str,
+    client_name: str = "Python Script",
+    token_filename: str = common.TOKEN_FILENAME,
 ) -> bool:
     """
     Request a token and install it into the user tokens directory.
 
     Args:
-        dc:
-            The DeviceClient used for the token request and state.
-            A default one will be created if not specified.
+        webapp_server:
+            The URL of the web application server for the device flow.
+        client_name:
+            The name to use as the client_id for the DeviceClient.
+            Defaults to "Python Script".
         token_filename:
             The basename of the token file to write.  May not contain directory
             components.
@@ -80,7 +91,7 @@ def request_token(
     Returns:
         bool: True on success, False on failure.
     """
-    token_contents = request_token_and_return(dc)
+    token_contents = request_token_and_return(webapp_server, client_name)
     if not token_contents:
         return False
     try:

@@ -18,8 +18,8 @@ Usage:
     # Use the token as needed
 """
 
-import logging
 import json
+import logging
 import time
 import typing as t
 import urllib.error

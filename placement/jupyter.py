@@ -87,7 +87,7 @@ class TokenFileUploadWidgets:
 
 
 class DeviceWidgets:
-    def __init__(self):
+    def __init__(self, client_name: str = "Jupyter Notebook"):
         # The description on the Button widget doesn't fit the default
         # layout so set up one of our own.  See
         # https://ipywidgets.readthedocs.io/en/latest/examples/Widget%20Layout.html#examples
@@ -115,7 +115,7 @@ class DeviceWidgets:
             layout=box_layout,
         )
 
-        self.client = DeviceClient(WEBAPP_SERVER, DEVICE_CLIENT_ID)
+        self.client = DeviceClient(WEBAPP_SERVER, client_name)
 
     def on_request_token_click(self, button: widgets.Button):
         try:
