@@ -39,7 +39,7 @@ def request_token_and_return(dc: t.Optional[DeviceClient] = None) -> t.Optional[
     try:
         dc.make_request()
     except DeviceClientError as err:
-        print(f"Request failed: {err}")
+        print(f"Request to {dc.webapp_server} failed: {err}")
         return None
 
     expires_at_dt = datetime.datetime.fromtimestamp(dc.expires_at).astimezone()
@@ -56,7 +56,7 @@ def request_token_and_return(dc: t.Optional[DeviceClient] = None) -> t.Optional[
     try:
         access_token_b = dc.poll_for_token_loop()
     except DeviceClientError as err:
-        print(f"Request failed: {err}")
+        print(f"Request to {dc.webapp_server} failed: {err}")
         return None
 
     print("Request successful!")

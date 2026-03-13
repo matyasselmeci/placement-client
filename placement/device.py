@@ -67,6 +67,7 @@ class DeviceClient:
     REQUEST_ENDPOINT = "/auth/device_authorization"
 
     def __init__(self, webapp_server: str, client_id: str):
+        self.webapp_server = webapp_server
         self.request_url = f"{webapp_server}{self.REQUEST_ENDPOINT}"
         self.client_id = client_id
         self._reset_attrs()
