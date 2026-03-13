@@ -4,13 +4,14 @@ Widgets for getting tokens in various ways
 
 import datetime
 import html
+import os
 import time
+import typing as t
 
 import ipywidgets as widgets
 from IPython.display import display
 
 from placement.common import (
-    DEVICE_CLIENT_ID,
     TOKEN_FILENAME,
     WEBAPP_SERVER,
     token_stat,
@@ -87,10 +88,23 @@ class TokenFileUploadWidgets:
 
 
 class DeviceWidgets:
-    def __init__(self, client_name: str = "Jupyter Notebook"):
+    def __init__(self, client_name: t.Optional[str] = None):
+        """
+        Initialize the DeviceWidgets for requesting tokens via device flow.
+
+        Arguments:
+            client_name:
+                The name that the placement server should display to the user
+                when they are requesting the token.  If not provided, defaults
+                to the DEVICE_CLIENT_NAME environment variable, or
+                "Jupyter Notebook" if that is not set.
+        """
         # The description on the Button widget doesn't fit the default
         # layout so set up one of our own.  See
         # https://ipywidgets.readthedocs.io/en/latest/examples/Widget%20Layout.html#examples
+        if client_name is None:
+            client_name = os.environ.get("DEVICE_CLIENT_NAME") or "Jupyter Notebook"
+
         items_layout = widgets.Layout(width="auto")
         box_layout = widgets.Layout(
             display="flex", flex_flow="column", align_items="stretch", width="50%"

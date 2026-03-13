@@ -134,5 +134,4 @@ def get_token_state(
 
 
 TOKEN_FILENAME = "Placement.token"
-DEVICE_CLIENT_ID = os.environ.get("DEVICE_CLIENT_ID") or "placement_demo_notebook"
 WEBAPP_SERVER = os.environ.get("PLACEMENT_WEBAPP_LINK") or "http://localhost:5000"

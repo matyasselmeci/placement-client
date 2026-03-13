@@ -3,6 +3,7 @@ Interactively get a token using the device flow.
 """
 
 import datetime
+import os
 
 # import time
 import typing as t
@@ -11,19 +12,8 @@ from placement import common  # , device
 from placement.device import DeviceClient, DeviceClientError
 
 
-def init_default_deviceclient() -> DeviceClient:
-    """
-    Create a DeviceClient with default settings.
-    """
-    # TODO This should take config from elsewhere (Condor config?)
-    return DeviceClient(
-        webapp_server=common.WEBAPP_SERVER,
-        client_id=common.DEVICE_CLIENT_ID,
-    )
-
-
 def request_token_and_return(
-    webapp_server: str, client_name: str = "Python Script"
+    webapp_server: str, client_name: t.Optional[str] = None
 ) -> t.Optional[bytes]:
     """
     Requests a token interactively and returns it as bytes.
@@ -33,11 +23,15 @@ def request_token_and_return(
             The URL of the web application server for the device flow.
         client_name:
             The name to use as the client_id for the DeviceClient.
-            Defaults to "Python Script".
+            If not provided, defaults to the DEVICE_CLIENT_NAME environment variable,
+            or "Python Script" if that is not set.
 
     Returns:
         The token as bytes or None.
     """
+    if client_name is None:
+        client_name = os.environ.get("DEVICE_CLIENT_NAME") or "Python Script"
+
     dc = DeviceClient(
         webapp_server=webapp_server,
         client_id=client_name,
