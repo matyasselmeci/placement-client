@@ -13,16 +13,16 @@ from placement.device import DeviceClient, DeviceClientError
 
 
 def request_token_and_return(
-    webapp_server: str, client_name: t.Optional[str] = None
+    placement_server: str, client_name: t.Optional[str] = None
 ) -> t.Optional[bytes]:
     """
     Requests a token interactively and returns it as bytes.
 
     Arguments:
-        webapp_server:
-            The URL of the web application server for the device flow.
+        placement_server:
+            The placement webapp server URL or hostname for the device flow.
         client_name:
-            The name to use as the client_id for the DeviceClient.
+            The name to use as the client identifier for the DeviceClient.
             If not provided, defaults to the DEVICE_CLIENT_NAME environment variable,
             or "Python Script" if that is not set.
 
@@ -33,14 +33,14 @@ def request_token_and_return(
         client_name = os.environ.get("DEVICE_CLIENT_NAME") or "Python Script"
 
     dc = DeviceClient(
-        webapp_server=webapp_server,
-        client_id=client_name,
+        placement_server=placement_server,
+        client_name=client_name,
     )
 
     try:
         dc.make_request()
     except DeviceClientError as err:
-        print(f"Request to {dc.webapp_server} failed: {err}")
+        print(f"Request to {dc.placement_server} failed: {err}")
         return None
 
     expires_at_dt = datetime.datetime.fromtimestamp(dc.expires_at).astimezone()
@@ -57,7 +57,7 @@ def request_token_and_return(
     try:
         access_token_b = dc.poll_for_token_loop()
     except DeviceClientError as err:
-        print(f"Request to {dc.webapp_server} failed: {err}")
+        print(f"Request to {dc.placement_server} failed: {err}")
         return None
 
     print("Request successful!")
@@ -65,7 +65,7 @@ def request_token_and_return(
 
 
 def request_token(
-    webapp_server: str,
+    placement_server: str,
     client_name: str = "Python Script",
     token_filename: str = common.TOKEN_FILENAME,
 ) -> bool:
@@ -73,10 +73,10 @@ def request_token(
     Request a token and install it into the user tokens directory.
 
     Args:
-        webapp_server:
-            The URL of the web application server for the device flow.
+        placement_server:
+            The placement server URL or hostname for the device flow.
         client_name:
-            The name to use as the client_id for the DeviceClient.
+            The name to use as the client identifier for the DeviceClient.
             Defaults to "Python Script".
         token_filename:
             The basename of the token file to write.  May not contain directory
@@ -85,7 +85,7 @@ def request_token(
     Returns:
         bool: True on success, False on failure.
     """
-    token_contents = request_token_and_return(webapp_server, client_name)
+    token_contents = request_token_and_return(placement_server, client_name)
     if not token_contents:
         return False
     try:

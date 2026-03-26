@@ -11,7 +11,7 @@ Features:
 - Handles device code expiration, polling intervals, and error conditions
 
 Usage:
-    client = DeviceClient(webapp_server, client_id)
+    client = DeviceClient(placement_server, client_name)
     client.make_request()
     # Display client.user_code and client.verification_uri to the user
     token = client.poll_for_token_loop()
@@ -66,11 +66,88 @@ class DeviceClient:
     GRANT_TYPE = "urn:ietf:params:oauth:grant-type:device_code"
     REQUEST_ENDPOINT = "/auth/device_authorization"
 
-    def __init__(self, webapp_server: str, client_id: str):
-        self.webapp_server = webapp_server
-        self.request_url = f"{webapp_server}{self.REQUEST_ENDPOINT}"
-        self.client_id = client_id
+    def __init__(self, placement_server: str, client_name: str):
+        """
+        Initialize the DeviceClient.
+
+        Args:
+            placement_server: The placement server URL as a hostname, host:port,
+                or IP address (with optional scheme). If no scheme is specified,
+                http:// is used for localhost, https:// for other hosts.
+            client_name: The client identifier. Must start with a letter or number
+                and be less than 80 characters.
+
+        Raises:
+            ValueError: If placement_server is invalid, if client_name doesn't
+                start with a letter or number, or if client_name is 80
+                characters or longer.
+        """
+        # Validate and transform placement_server
+        placement_server = self._validate_and_transform_server(placement_server)
+
+        # Validate client_name
+        if not client_name:
+            raise ValueError("client_name cannot be empty")
+        if not client_name[0].isalnum():
+            raise ValueError("client_name must start with a letter or number")
+        if len(client_name) >= 80:
+            raise ValueError("client_name must be less than 80 characters")
+
+        self.placement_server = placement_server
+        self.request_url = f"{placement_server}{self.REQUEST_ENDPOINT}"
+        self.client_name = client_name
         self._reset_attrs()
+
+    @staticmethod
+    def _validate_and_transform_server(server: str) -> str:
+        """
+        Validate and transform the placement server URL.
+
+        If no scheme is provided, http:// is added for localhost, https:// otherwise.
+
+        Args:
+            server: The server URL/hostname/IP address.
+
+        Returns:
+            The validated and transformed server URL.
+
+        Raises:
+            ValueError: If the server format is invalid.
+        """
+        if not server:
+            raise ValueError("placement_server cannot be empty")
+
+        # Check if a scheme is present
+        # Note: If a port is specified (e.g. 'localhost:5000'), urlparse thinks
+        # "localhost" is the scheme.
+        if "//" in server:
+            parsed = urllib.parse.urlparse(server)
+        else:
+            parsed = urllib.parse.urlparse(f"//{server}")
+        if parsed.scheme:
+            # Has a scheme; validate it
+            if parsed.scheme not in ("http", "https"):
+                raise ValueError(
+                    f"Invalid scheme '{parsed.scheme}'; must be 'http' or 'https'"
+                )
+            # Verify netloc is present
+            if not parsed.netloc:
+                raise ValueError("Invalid URL: missing hostname")
+            return server
+        else:
+            netloc = parsed.netloc
+
+            if not netloc:
+                raise ValueError("Invalid placement_server format")
+
+            # Extract hostname (remove port if present)
+            hostname = netloc.split(":")[0]
+
+            # Use http for localhost, https for others
+            if hostname == "localhost":
+                return f"http://{netloc}"
+            else:
+                return f"https://{netloc}"
 
     def _reset_attrs(self):
         self.device_code = ""
@@ -140,7 +217,7 @@ class DeviceClient:
     def make_request(self) -> "DeviceClient":
         """
         Starts the session for the device flow by making the initial request
-        to the webapp server for the token.
+        to the placement server for the token.
 
         Returns self for convenience.
 
@@ -153,7 +230,7 @@ class DeviceClient:
         """
         self._reset_attrs()
         status_code, rj = self._post_form_json(
-            data={"client_id": self.client_id},
+            data={"client_id": self.client_name},
             connection_error_cls=DeviceClientInitialRequestError,
             connection_error_message="Initial request failed to connect to server",
         )
@@ -185,7 +262,7 @@ class DeviceClient:
 
     def poll_for_token(self) -> t.Optional[bytes]:
         """
-        Poll the server performing the device flow for the placement token.
+        Poll the placement server performing the device flow for the token.
         Returns the token; also sets self.access_token to the token.
 
         Returns:
@@ -203,7 +280,7 @@ class DeviceClient:
             raise DeviceClientRequestNotInProgress()
         status_code, response_json = self._post_form_json(
             data={
-                "client_id": self.client_id,
+                "client_id": self.client_name,
                 "grant_type": self.GRANT_TYPE,
                 "device_code": self.device_code,
             },
