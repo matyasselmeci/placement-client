@@ -14,7 +14,7 @@ Usage:
     client = DeviceClient(placement_server, client_name)
     client.make_request()
     # Display client.user_code and client.verification_uri to the user
-    token = client.poll_for_token_loop()
+    token = client.wait_for_token()
     # Use the token as needed
 """
 
@@ -328,7 +328,20 @@ class DeviceClient:
             self.access_token = access_token_b
             return access_token_b
 
-    def poll_for_token_loop(self) -> bytes:
+    def wait_for_token(self) -> bytes:
+        """
+        Polls the placement server until a token is returned or the device code expires.
+
+        Returns:
+            The placement token encoded as bytes.
+
+        Raises:
+            DeviceClientRequestNotInProgress: If no device flow session is in progress.
+            DeviceClientTimedOut: If the device code has expired before authorization.
+            DeviceClientError: If a connection error occurs during polling.
+            DeviceClientAccessDenied: If the user denied the token request.
+            DeviceClientUnexpectedOutput: If the server returns malformed JSON.
+        """
         if not self.request_in_progress:
             raise DeviceClientRequestNotInProgress()
 

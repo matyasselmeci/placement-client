@@ -55,7 +55,7 @@ def request_token_and_return(
         f"The code will expire at {expires_at_dt.strftime(expformat)}."
     )
     try:
-        access_token_b = dc.poll_for_token_loop()
+        access_token_b = dc.wait_for_token()
     except DeviceClientError as err:
         print(f"Request to {dc.placement_server} failed: {err}")
         return None
