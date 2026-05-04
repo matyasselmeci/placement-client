@@ -10,11 +10,8 @@ import classad2
 import htcondor2
 
 from placement.common import (
-    TOKEN_FILENAME,
     T_Constraint,
     T_PathOrStr,
-    TokenState,
-    get_token_state,
 )
 
 _log = logging.getLogger(__name__)
@@ -92,84 +89,6 @@ class AP:
                 "There are %d jobs matching the constraint %s currently placed at the AP"
                 % (count, constraint)
             )
-
-    def describe_token(self, token_filename: str = TOKEN_FILENAME):
-        project = None
-        user = None
-        have_read = False
-        have_write = False
-        ad = {}
-        text = []
-
-        state = get_token_state(token_filename)
-
-        if state == TokenState.MISSING:
-            print("The token file is missing")
-            return
-        elif state == TokenState.UNREADABLE:
-            print("The token file cannot be read or is not a recognizable token")
-            return
-        elif state == TokenState.EXPIRED:
-            print("The token is expired.")
-            return
-        elif state == TokenState.OK:
-            pass
-
-        try:
-            ad = htcondor2.ping(self.schedd_ad, "READ")
-            have_read = True
-            # ^^ maybe also check ad['AuthorizationSucceeded'] ?
-            text.append(
-                "You can list jobs and view the details of jobs with your current token."
-            )
-        except htcondor2.HTCondorException as err:
-            if "Failed to start command" in str(err):
-                have_read = False
-                text.append(
-                    "You CANNOT list jobs or view the details of jobs with your current token."
-                )
-            else:
-                raise
-        try:
-            ad = htcondor2.ping(self.schedd_ad, "WRITE")
-            have_write = True
-            # ^^ maybe also check ad['AuthorizationSucceeded'] ?
-            user_ad = (self.schedd.queryUserAds(constraint=f'User=="{user}"') or [{}])[0]  # fmt: skip
-            # ^^ TODO We can't do this query if we don't have READ.
-            if user_ad.get("Enabled", True):
-                text.append(
-                    "You can place, remove, edit, hold, release, and otherwise manipulate jobs with your current token."
-                )
-            else:
-                text.append(
-                    "You can remove, edit, hold, release, and otherwise manipulate existing jobs with your current token."
-                )
-                text.append(
-                    "However, you CANNOT place new jobs, and your existing jobs will not start."
-                )
-        except htcondor2.HTCondorException as err:
-            if "Failed to start command" in str(err):
-                have_read = False
-                text.append(
-                    "You CANNOT place, remove, edit, hold, release, or otherwise manipulate jobs with your current token."
-                )
-            else:
-                raise
-        project = ad.get("AuthTokenProject")
-        user = ad.get("MyRemoteUserName")
-        if user:
-            text.append(f"Your AP User ID is '{user}'.")
-        else:
-            text.append(
-                "ERROR: Your AP User ID is unknown."
-            )  # XXX how can this happen?
-        if project:
-            text.append(f"Your currently selected project is '{project}'.")
-        else:
-            text.append("WARNING: Your currently selected project is unknown.")
-
-        print("\n".join(text))
-
 
 class PickleableSubmit(htcondor2.Submit):
     # A pickleable htcondor2.Submit

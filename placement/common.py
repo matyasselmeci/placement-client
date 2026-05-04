@@ -24,6 +24,10 @@ T_Constraint = t.Union["classad2.ExprTree", str]
 T_PathOrStr = t.Union[os.PathLike, str]
 
 
+TOKEN_FILENAME = "Placement.token"
+WEBAPP_SERVER = os.environ.get("PLACEMENT_WEBAPP_LINK") or "http://localhost:5000"
+
+
 #
 #
 # Utils for installing the token once obtained
@@ -46,7 +50,9 @@ def get_condor_tokens_dir(*, create: bool = False) -> pathlib.Path:
     try:
         # The SEC_TOKEN_DIRECTORY parameter is the location where condor looks
         # for tokens; if it is not set or empty, then condor uses ~/.condor/tokens.d.
-        import htcondor2
+        import htcondor2  # type: ignore
+
+        # ^^ ignore this: we catch the ImportError and fall back to the default path
 
         sec_token_directory = htcondor2.param["SEC_TOKEN_DIRECTORY"]
         if sec_token_directory:
@@ -133,5 +139,95 @@ def get_token_state(
     return TokenState.OK
 
 
-TOKEN_FILENAME = "Placement.token"
-WEBAPP_SERVER = os.environ.get("PLACEMENT_WEBAPP_LINK") or "http://localhost:5000"
+def describe_token(
+    token_filename: str = TOKEN_FILENAME,
+    collector_host: t.Optional[str] = None,
+    schedd_host: t.Optional[str] = None,
+) -> None:
+    try:
+        import htcondor2  # type: ignore
+    except ImportError:
+        print("htcondor2 module not found; cannot describe token.")
+        return
+
+    if collector_host:
+        collector = htcondor2.Collector(collector_host)
+    else:
+        collector = htcondor2.Collector()
+    schedd_host = schedd_host or htcondor2.param["SCHEDD_HOST"]
+    schedd_ad = collector.locate(htcondor2.DaemonType.Schedd, schedd_host)
+    schedd = htcondor2.Schedd(schedd_ad)
+
+    project = None
+    user = None
+    # have_read = False
+    # have_write = False
+    ad = {}
+    text = []
+
+    state = get_token_state(token_filename)
+
+    if state == TokenState.MISSING:
+        print("The token file is missing")
+        return
+    elif state == TokenState.UNREADABLE:
+        print("The token file cannot be read or is not a recognizable token")
+        return
+    elif state == TokenState.EXPIRED:
+        print("The token is expired.")
+        return
+    elif state == TokenState.OK:
+        pass
+
+    try:
+        ad = htcondor2.ping(schedd_ad, "READ")
+        # have_read = True
+        # ^^ maybe also check ad['AuthorizationSucceeded'] ?
+        text.append(
+            "You can list jobs and view the details of jobs with your current token."
+        )
+    except htcondor2.HTCondorException as err:
+        if "Failed to start command" in str(err):
+            # have_read = False
+            text.append(
+                "You CANNOT list jobs or view the details of jobs with your current token."
+            )
+        else:
+            raise
+    try:
+        ad = htcondor2.ping(schedd_ad, "WRITE")
+        # have_write = True
+        # ^^ maybe also check ad['AuthorizationSucceeded'] ?
+        user_ad = (schedd.queryUserAds(constraint=f'User=="{user}"') or [{}])[0]  # fmt: skip
+        # ^^ TODO We can't do this query if we don't have READ.
+        if user_ad.get("Enabled", True):
+            text.append(
+                "You can place, remove, edit, hold, release, and otherwise manipulate jobs with your current token."
+            )
+        else:
+            text.append(
+                "You can remove, edit, hold, release, and otherwise manipulate existing jobs with your current token."
+            )
+            text.append(
+                "However, you CANNOT place new jobs, and your existing jobs will not start."
+            )
+    except htcondor2.HTCondorException as err:
+        if "Failed to start command" in str(err):
+            # have_read = False
+            text.append(
+                "You CANNOT place, remove, edit, hold, release, or otherwise manipulate jobs with your current token."
+            )
+        else:
+            raise
+    project = ad.get("AuthTokenProject")
+    user = ad.get("MyRemoteUserName")
+    if user:
+        text.append(f"Your AP User ID is '{user}'.")
+    else:
+        text.append("ERROR: Your AP User ID is unknown.")  # XXX how can this happen?
+    if project:
+        text.append(f"Your currently selected project is '{project}'.")
+    else:
+        text.append("WARNING: Your currently selected project is unknown.")
+
+    print("\n".join(text))
