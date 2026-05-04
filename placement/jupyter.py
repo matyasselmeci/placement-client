@@ -17,7 +17,7 @@ from placement.common import (
     token_stat,
     write_token,
 )
-from placement.device import DeviceClient, DeviceClientError
+from placement.device import DeviceClient, DeviceClientError, DEFAULT_CLIENT_ID
 
 
 class TokenFileUploadWidgets:
@@ -103,7 +103,7 @@ class DeviceWidgets:
         # layout so set up one of our own.  See
         # https://ipywidgets.readthedocs.io/en/latest/examples/Widget%20Layout.html#examples
         if client_id is None:
-            client_id = os.environ.get("DEVICE_CLIENT_ID") or device.DEFAULT_CLIENT_ID
+            client_id = os.environ.get("DEVICE_CLIENT_ID") or DEFAULT_CLIENT_ID
 
         items_layout = widgets.Layout(width="auto")
         box_layout = widgets.Layout(
