@@ -18,7 +18,7 @@ dev = [
 ]
 
 [project.scripts]
-placement = "placement.cmd:main"
+placement-request = "placement.cmd:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

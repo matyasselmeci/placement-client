@@ -10,47 +10,31 @@ from placement import device, cli
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        prog="placement",
-        description="placement client command-line interface",
-    )
-    subparsers = parser.add_subparsers(dest="subcommand", metavar="SUBCOMMAND")
-    subparsers.required = True
-    _add_request_token_subcommand(subparsers)
-    args = parser.parse_args()
-    sys.exit(args.func(args))
-
-
-def _add_request_token_subcommand(subparsers) -> None:
-    sub = subparsers.add_parser(
-        "request-token",
-        aliases=["req"],
-        help="request a placement token via the device flow",
+        prog="placement-request",
         description=(
             "Authenticate with a Placement server using the OAuth2 device flow "
             "and install the resulting token."
         ),
     )
-    sub.add_argument(
+    parser.add_argument(
         "placement_server",
         metavar="PLACEMENT_SERVER",
         help="hostname or URL of the Placement server",
     )
-    sub.add_argument(
+    parser.add_argument(
         "--client-id",
         default=None,
         metavar="ID",
         help=f'client identifier sent to the server (default: "{device.DEFAULT_CLIENT_ID}")',
     )
-    sub.set_defaults(func=_handle_request_token)
+    args = parser.parse_args()
 
-
-def _handle_request_token(args: argparse.Namespace) -> int:
     kwargs: dict = {"placement_server": args.placement_server}
     if args.client_id is not None:
         kwargs["client_id"] = args.client_id
 
     success = cli.request_token(**kwargs)
-    return 0 if success else 1
+    sys.exit(0 if success else 1)
 
 
 if __name__ == "__main__":
