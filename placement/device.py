@@ -11,7 +11,7 @@ Features:
 - Handles device code expiration, polling intervals, and error conditions
 
 Usage:
-    client = DeviceClient(placement_server, client_name)
+    client = DeviceClient(placement_server, client_id)
     client.make_request()
     # Display client.user_code and client.verification_uri to the user
     token = client.wait_for_token()
@@ -27,6 +27,9 @@ import urllib.parse
 import urllib.request
 
 _log = logging.getLogger(__name__)
+
+
+DEFAULT_CLIENT_ID = "placement_client"
 
 
 class DeviceClientError(Exception):
@@ -66,7 +69,7 @@ class DeviceClient:
     GRANT_TYPE = "urn:ietf:params:oauth:grant-type:device_code"
     REQUEST_ENDPOINT = "/auth/device_authorization"
 
-    def __init__(self, placement_server: str, client_name: str):
+    def __init__(self, placement_server: str, client_id: str = DEFAULT_CLIENT_ID):
         """
         Initialize the DeviceClient.
 
@@ -74,28 +77,22 @@ class DeviceClient:
             placement_server: The placement server URL as a hostname, host:port,
                 or IP address (with optional scheme). If no scheme is specified,
                 http:// is used for localhost, https:// for other hosts.
-            client_name: The client identifier. Must start with a letter or number
-                and be less than 80 characters.
+            client_id: The client identifier for the device client; must be
+                registered in the webapp.
 
         Raises:
-            ValueError: If placement_server is invalid, if client_name doesn't
-                start with a letter or number, or if client_name is 80
-                characters or longer.
+            ValueError: If placement_server is invalid or client_id is empty.
         """
         # Validate and transform placement_server
         placement_server = self._validate_and_transform_server(placement_server)
 
-        # Validate client_name
-        if not client_name:
-            raise ValueError("client_name cannot be empty")
-        if not client_name[0].isalnum():
-            raise ValueError("client_name must start with a letter or number")
-        if len(client_name) >= 80:
-            raise ValueError("client_name must be less than 80 characters")
+        # Validate client_id
+        if not client_id:
+            raise ValueError("client_id cannot be empty")
 
         self.placement_server = placement_server
         self.request_url = f"{placement_server}{self.REQUEST_ENDPOINT}"
-        self.client_name = client_name
+        self.client_id = client_id
         self._reset_attrs()
 
     @staticmethod
@@ -230,7 +227,7 @@ class DeviceClient:
         """
         self._reset_attrs()
         status_code, rj = self._post_form_json(
-            data={"client_id": self.client_name},
+            data={"client_id": self.client_id},
             connection_error_cls=DeviceClientInitialRequestError,
             connection_error_message="Initial request failed to connect to server",
         )
@@ -280,7 +277,7 @@ class DeviceClient:
             raise DeviceClientRequestNotInProgress()
         status_code, response_json = self._post_form_json(
             data={
-                "client_id": self.client_name,
+                "client_id": self.client_id,
                 "grant_type": self.GRANT_TYPE,
                 "device_code": self.device_code,
             },

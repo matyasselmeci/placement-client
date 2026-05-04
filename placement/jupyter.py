@@ -88,22 +88,22 @@ class TokenFileUploadWidgets:
 
 
 class DeviceWidgets:
-    def __init__(self, client_name: t.Optional[str] = None):
+    def __init__(self, client_id: t.Optional[str] = None):
         """
         Initialize the DeviceWidgets for requesting tokens via device flow.
 
         Arguments:
-            client_name:
+            client_id:
                 The name that the placement server should display to the user
                 when they are requesting the token.  If not provided, defaults
-                to the DEVICE_CLIENT_NAME environment variable, or
-                "Jupyter Notebook" if that is not set.
+                to the DEVICE_CLIENT_ID environment variable, or
+                device.DEFAULT_CLIENT_ID.
         """
         # The description on the Button widget doesn't fit the default
         # layout so set up one of our own.  See
         # https://ipywidgets.readthedocs.io/en/latest/examples/Widget%20Layout.html#examples
-        if client_name is None:
-            client_name = os.environ.get("DEVICE_CLIENT_NAME") or "Jupyter Notebook"
+        if client_id is None:
+            client_id = os.environ.get("DEVICE_CLIENT_ID") or device.DEFAULT_CLIENT_ID
 
         items_layout = widgets.Layout(width="auto")
         box_layout = widgets.Layout(
@@ -129,7 +129,7 @@ class DeviceWidgets:
             layout=box_layout,
         )
 
-        self.client = DeviceClient(WEBAPP_SERVER, client_name)
+        self.client = DeviceClient(WEBAPP_SERVER, client_id)
 
     def on_request_token_click(self, button: widgets.Button):
         try:

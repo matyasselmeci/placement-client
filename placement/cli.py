@@ -9,11 +9,11 @@ import os
 import typing as t
 
 from placement import common  # , device
-from placement.device import DeviceClient, DeviceClientError
+from placement.device import DEFAULT_CLIENT_ID, DeviceClient, DeviceClientError
 
 
 def request_token_and_return(
-    placement_server: str, client_name: t.Optional[str] = None
+    placement_server: str, client_id: t.Optional[str] = None
 ) -> t.Optional[bytes]:
     """
     Requests a token interactively and returns it as bytes.
@@ -21,20 +21,20 @@ def request_token_and_return(
     Arguments:
         placement_server:
             The placement webapp server URL or hostname for the device flow.
-        client_name:
+        client_id:
             The name to use as the client identifier for the DeviceClient.
-            If not provided, defaults to the DEVICE_CLIENT_NAME environment variable,
-            or "Python Script" if that is not set.
+            If not provided, defaults to the DEVICE_CLIENT_ID environment variable,
+            or DEFAULT_CLIENT_ID if that is not set.
 
     Returns:
         The token as bytes or None.
     """
-    if client_name is None:
-        client_name = os.environ.get("DEVICE_CLIENT_NAME") or "Python Script"
+    if client_id is None:
+        client_id = os.environ.get("DEVICE_CLIENT_ID") or DEFAULT_CLIENT_ID
 
     dc = DeviceClient(
         placement_server=placement_server,
-        client_name=client_name,
+        client_id=client_id,
     )
 
     try:
@@ -66,7 +66,7 @@ def request_token_and_return(
 
 def request_token(
     placement_server: str,
-    client_name: str = "Python Script",
+    client_id: t.Optional[str] = None,
     token_filename: str = common.TOKEN_FILENAME,
 ) -> bool:
     """
@@ -75,9 +75,10 @@ def request_token(
     Args:
         placement_server:
             The placement server URL or hostname for the device flow.
-        client_name:
+        client_id:
             The name to use as the client identifier for the DeviceClient.
-            Defaults to "Python Script".
+            If not provided, defaults to the DEVICE_CLIENT_ID environment variable,
+            or DEFAULT_CLIENT_ID if that is not set.
         token_filename:
             The basename of the token file to write.  May not contain directory
             components.
@@ -85,7 +86,7 @@ def request_token(
     Returns:
         bool: True on success, False on failure.
     """
-    token_contents = request_token_and_return(placement_server, client_name)
+    token_contents = request_token_and_return(placement_server, client_id)
     if not token_contents:
         return False
     try:

@@ -36,18 +36,18 @@ def _add_request_token_subcommand(subparsers) -> None:
         help="hostname or URL of the Placement server",
     )
     sub.add_argument(
-        "--client-name",
+        "--client-id",
         default=None,
-        metavar="NAME",
-        help='client identifier sent to the server (default: "Python Script")',
+        metavar="ID",
+        help=f'client identifier sent to the server (default: "{device.DEFAULT_CLIENT_ID}")',
     )
     sub.set_defaults(func=_handle_request_token)
 
 
 def _handle_request_token(args: argparse.Namespace) -> int:
     kwargs: dict = {"placement_server": args.placement_server}
-    if args.client_name is not None:
-        kwargs["client_name"] = args.client_name
+    if args.client_id is not None:
+        kwargs["client_id"] = args.client_id
 
     success = cli.request_token(**kwargs)
     return 0 if success else 1
