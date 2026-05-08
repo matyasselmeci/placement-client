@@ -1,3 +1,22 @@
 [build-system]
-requires = ["setuptools>=40"]
+requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "placement-client"
+version = "0.1.0"
+requires-python = ">=3.6.8"
+dependencies = [
+	"htcondor>=25.8",
+]
+
+[project.optional-dependencies]
+jupyter = ["ipywidgets"]
+dev = ["black", "isort"]
+test = ["pytest"]
+
+[project.scripts]
+placement-request = "placement.cmd:main"
+
+[tool.setuptools]
+packages = { find = { where = ["."], include = ["placement*"] } }
