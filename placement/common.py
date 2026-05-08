@@ -8,7 +8,8 @@ import pathlib
 import time
 import typing as t
 
-import classad2
+if t.TYPE_CHECKING:
+    import classad2
 
 _log = logging.getLogger(__name__)
 
