@@ -5,7 +5,7 @@ Command-line interface for the placement client.
 import argparse
 import sys
 
-from placement import cli, common
+from placement import common, text_ui
 
 
 def get_args(argv) -> argparse.Namespace:
@@ -39,7 +39,7 @@ def main(argv=()) -> None:
     token_filename = args.token_name
     if "." not in token_filename:
         token_filename += ".token"
-    success = cli.request_token(
+    success = text_ui.request_token(
         placement_server=args.placement_server, token_filename=token_filename
     )
     sys.exit(0 if success else 1)
