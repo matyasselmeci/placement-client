@@ -34,20 +34,20 @@ def get_args(argv) -> argparse.Namespace:
     return args
 
 
-def main(argv=()) -> None:
-    args = get_args(argv or sys.argv)
-    token_filename = args.token_name
-    if "." not in token_filename:
-        token_filename += ".token"
-    success = text_ui.request_token(
-        placement_server=args.placement_server, token_filename=token_filename
-    )
-    sys.exit(0 if success else 1)
+def main(argv=()) -> int:
+    try:
+        args = get_args(argv or sys.argv)
+        token_filename = args.token_name
+        if "." not in token_filename:
+            token_filename += ".token"
+        success = text_ui.request_token(
+            placement_server=args.placement_server, token_filename=token_filename
+        )
+        return 0 if success else 1
+    except KeyboardInterrupt:
+        print("\nAborted by user.", file=sys.stderr)
+        return 130
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("\nAborted by user.", file=sys.stderr)
-        sys.exit(130)
+    sys.exit(main())
