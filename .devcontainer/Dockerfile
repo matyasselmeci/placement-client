@@ -4,8 +4,9 @@ FROM mcr.microsoft.com/devcontainers/python:1-3.9-bullseye
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-RUN mv -f /etc/apt/sources.list.d/yarn.list{,.bak} || :
-# ^^ GPG key is broken
+# Remove the broken yarn GPG key early
+RUN rm -f /etc/apt/sources.list.d/yarn.list && \
+    rm -f /etc/apt/sources.list.d/yarn.sources
 
 # Install ripgrep and stacked git
 ARG STGIT_VERSION=2.5.5
