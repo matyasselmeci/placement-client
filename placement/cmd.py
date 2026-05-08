@@ -5,10 +5,11 @@ Command-line interface for the placement client.
 import argparse
 import sys
 
-from placement import device, cli
+from placement import cli, common
 
 
-def main() -> None:
+def get_args(argv) -> argparse.Namespace:
+    default_token_name = common.TOKEN_FILENAME.split(".")[0]  # chop off the .token
     parser = argparse.ArgumentParser(
         prog="placement-request",
         description=(
@@ -22,18 +23,25 @@ def main() -> None:
         help="hostname or URL of the Placement server",
     )
     parser.add_argument(
-        "--client-id",
-        default=None,
-        metavar="ID",
-        help=f'client identifier sent to the server (default: "{device.DEFAULT_CLIENT_ID}")',
+        "-n",
+        "--token-name",
+        default=default_token_name,
+        help="Name of the token to create (default: %(default)s)",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv[1:])
+    if any(sep in args.token_name for sep in ("/", "\\", ":")):
+        parser.error("Token name may not contain path separators ('/', '\\', ':').")
+    return args
 
-    kwargs: dict = {"placement_server": args.placement_server}
-    if args.client_id is not None:
-        kwargs["client_id"] = args.client_id
 
-    success = cli.request_token(**kwargs)
+def main(argv=()) -> None:
+    args = get_args(argv or sys.argv)
+    token_filename = args.token_name
+    if "." not in token_filename:
+        token_filename += ".token"
+    success = cli.request_token(
+        placement_server=args.placement_server, token_filename=token_filename
+    )
     sys.exit(0 if success else 1)
 
 
