@@ -7,12 +7,15 @@ ENV PYTHONUNBUFFERED=1
 RUN mv -f /etc/apt/sources.list.d/yarn.list{,.bak} || :
 # ^^ GPG key is broken
 
-# Install stacked git
+# Install ripgrep and stacked git
 ARG STGIT_VERSION=2.5.5
 RUN ARCH=$(dpkg --print-architecture) && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends ripgrep && \
     wget https://github.com/stacked-git/stgit/releases/download/v${STGIT_VERSION}/stgit_${STGIT_VERSION}-1_${ARCH}.deb && \
-    apt install ./stgit_${STGIT_VERSION}-1_${ARCH}.deb && \
-    rm -f ./stgit_${STGIT_VERSION}-1_${ARCH}.deb
+    apt install -y ./stgit_${STGIT_VERSION}-1_${ARCH}.deb && \
+    rm -f ./stgit_${STGIT_VERSION}-1_${ARCH}.deb && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:0.11.7 /uv /bin/uv
