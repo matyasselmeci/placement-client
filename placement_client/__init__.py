@@ -1,6 +1,7 @@
 # __init__
 from .common import write_token
-from .device import DeviceClient, DeviceClientError
+from .device import DeviceClient
+from .err import DeviceClientError
 from .text_ui import request_token, request_token_and_return
 
 __all__ = [
