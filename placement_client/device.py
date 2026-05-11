@@ -217,7 +217,7 @@ class DeviceClient:
                 error = rj.get("error")
                 if error is not None:
                     msg += "; message from server: %s" % error
-            raise DeviceClientError(msg)
+            raise DeviceClientInitialRequestError(msg)
         try:
             self.device_code = rj["device_code"]
             expires_in = rj["expires_in"]
@@ -254,7 +254,7 @@ class DeviceClient:
             DeviceClientError: If connection to server is lost.
         """
         if not self.request_in_progress:
-            raise DeviceClientRequestNotInProgress()
+            raise DeviceClientRequestNotInProgress("Device flow session not in progress")
         status_code, response_json = self._post_form_json(
             data={
                 "client_id": self.client_id,
@@ -322,7 +322,7 @@ class DeviceClient:
             DeviceClientUnexpectedOutput: If the server returns malformed JSON.
         """
         if not self.request_in_progress:
-            raise DeviceClientRequestNotInProgress()
+            raise DeviceClientRequestNotInProgress("Device flow session not in progress")
 
         while time.time() < self.expires_at:
             access_token_b = self.poll_for_token()
