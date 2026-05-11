@@ -33,6 +33,7 @@ All source lives under `placement_client/` (underscore, not dash).
 | `placement_client/cmd.py` | CLI entry point (`placement-request`) → `cmd:main` |
 | `placement_client/common.py` | Token file I/O, `TokenState` enum, `get_condor_tokens_dir`, permissions |
 | `placement_client/device.py` | OAuth2 Device Flow (`DeviceClient`). Stdlib only (`urllib`). |
+| `placement_client/err.py` | Exception hierarchy rooted at `DeviceClientError`. |
 | `placement_client/text_ui.py` | Interactive console helpers for device flow |
 | `placement_client/jupyter.py` | ipywidgets UI; requires `ipywidgets` + `IPython` |
 
@@ -41,7 +42,7 @@ Dependency direction: UI layers (`text_ui.py`, `jupyter.py`, `cmd.py`) depend on
 ## Key Conventions
 
 - **Logging**: Every module uses `_log = logging.getLogger(__name__)`. No `print()` in library code; user-facing output lives only in `text_ui.py` and `jupyter.py`.
-- **Exceptions**: Typed hierarchy in `device.py` rooted at `DeviceClientError`. HTCondor errors are `htcondor2.HTCondorException`.
+- **Exceptions**: Typed hierarchy in `err.py` rooted at `DeviceClientError`. HTCondor errors are `htcondor2.HTCondorException`.
 - **Token security**: Token files written with `0o600`; tokens directory created with `0o700`. Filename validation rejects `/`, `\`, `:`.
 - **Python compat**: Target is >= 3.6.8.
 
