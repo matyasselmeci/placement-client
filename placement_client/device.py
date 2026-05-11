@@ -297,7 +297,7 @@ class DeviceClient:
                 _log.debug("Received slow_down; interval set to %d", self.interval)
                 return None
             if error == "access_denied":
-                raise DeviceClientAccessDenied()
+                raise DeviceClientAccessDenied("User denied token request")
             if error == "expired_token":
                 raise DeviceClientTimedOut("Server responds device code expired")
 
