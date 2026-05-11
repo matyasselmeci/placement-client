@@ -65,14 +65,10 @@ class DeviceClient:
                 registered in the webapp.
 
         Raises:
-            ValueError: If placement_server is invalid or client_id is empty.
+            ValueError: If placement_server is invalid.
         """
         # Validate and transform placement_server
         placement_server = self._validate_and_transform_server(placement_server)
-
-        # Validate client_id
-        if not client_id:
-            raise ValueError("client_id cannot be empty")
 
         self.placement_server = placement_server
         self.request_url = f"{placement_server}{self.REQUEST_ENDPOINT}"
@@ -273,7 +269,9 @@ class DeviceClient:
             try:
                 error: str = response_json["error"]
             except (TypeError, KeyError):
-                raise DeviceClientUnexpectedOutput("Unknown failure from server")
+                raise DeviceClientUnexpectedOutput(
+                    "Unknown failure from server - error message not available"
+                )
             if error == "authorization_pending":
                 return None
             if error == "slow_down":

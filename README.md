@@ -40,7 +40,7 @@ To install the Jupyter notebook interface, specify the `jupyter` extra as follow
 
       pip install "placement-client[jupyter]@git+https://github.com/matyasselmeci/placement-client.git"
 
-^^ TODO test to make sure these work on old and new versions
+[1]: <https://htcondor.readthedocs.io/en/latest/getting-htcondor/from-our-repositories.html>
 
 Usage
 -----
@@ -54,14 +54,14 @@ To request a token from the command line, run:
 Where `<PLACEMENT_SERVER>` is the hostname of the Placement Server you wish to
 request a token from.  For example:
 
-      placement-request demo-ap.chtc.wisc.edu
+      placement-request placement-server.example.com
 
 A URL will be displayed for you to visit in your web browser, as well as a
 code to enter on the web page.
 
       Token requested; please go to
 
-            https://demo-ap.chtc.wisc.edu/auth/code?user_code=ABCD-EFGH
+            https://placement-server.example.com/auth/code?user_code=ABCD-EFGH
 
       and use the code "ABCD-EFGH".
       The code will expire at <date/time>.
@@ -79,6 +79,38 @@ and is ready for use with HTCondor remote submission.
 The token is written to your HTCondor user tokens directory
 (e.g. `~/.condor/tokens.d/` on Linux) with the filename `Placement.token`.
 
+#### Possible errors
+
+The following are common errors you may encounter during the token request process:
+
+- "Connection refused" or some other connection error: this indicates that
+  the client was unable to connect to the Placement Server.  Check that you
+  have the correct hostname for the Placement Server, and that there are no
+  network issues preventing you from connecting to it.
+
+- "Server responds device code expired": this indicates that the code you were
+  given has expired.  This can happen if you wait too long to enter the code
+  on the web page, or if there is a delay in the token request process.  If
+  this happens, run the `placement-request` command again to get a new
+  code.
+
+- "User denied token request": this occurs if you click "Cancel" on the
+  Placement Server web page after entering the code or selecting permissions
+  and project.  If this happens, you must run the `placement-request` command
+  again to get a new code.
+
+- "Permission denied", "No such file or directory", "No space left on device",
+  or some other file system error: this indicates that the client was unable
+  to write the token to disk.  Check that you have write permissions to the
+  user tokens directory (e.g. `~/.condor/tokens.d/` on Linux), and that there
+  is sufficient disk space or quota.
+
+- "Unknown failure from the server", "Unexpected response from the server",
+  or some other error message indicating an unexpected failure: this
+  indicates that something went wrong on the server side during the token
+  request process.  Contact your HTCondor administrator or facilitator
+  with the error message and information about which server you were trying
+  to contact, when the error occurred, and any other relevant details.
 
 ### Library usage (interactive)
 
@@ -146,6 +178,38 @@ directory (e.g. `~/.condor/tokens.d/` on Linux).
 The path to the installed token file will be returned on success,
 or an `OSError` will be raised on failure.
 
+#### Possible errors
+
+The following are common errors you may encounter during the token request process:
+
+- `DeviceClientInitialRequestError`: this indicates that something went wrong
+  during the initial request to the server for the device code.
+  This could be due to a network error, an invalid response from the server,
+  or some other issue.  Check that you have the correct hostname for the
+  Placement Server, and that there are no network issues preventing you from
+  connecting to it.
+
+- `DeviceClientTimedOut`: this indicates that the code you were
+  given has expired.  This can happen if you wait too long to enter the code
+  on the web page, or if there is a delay in the token request process.  If
+  this happens, re-start the token request.
+
+- `DeviceClientAccessDenied`: this occurs if you click "Cancel" on the
+  Placement Server web page after entering the code or selecting permissions
+  and project.  If this happens, you must re-start the token request.
+
+- Other subclasses of `DeviceClientError`: see `err.py` for more possible
+  exceptions related to the token request process.  Some of these (e.g.
+  `DeviceClientUnexpectedOutput`) might indicate a problem at the server
+  and you should contact your HTCondor administrator or facilitator with the
+  error message and information about which server you were trying to contact,
+  when the error occurred, and any other relevant details.
+
+- `OSError`: this indicates that the client was unable to write the token to
+  disk.  Check that you have write permissions to the user tokens directory
+  (e.g. `~/.condor/tokens.d/` on Linux), and that there is sufficient disk
+  space or quota.
+
 
 ### Jupyter usage
 
@@ -184,5 +248,3 @@ widgets.display_widgets()
 Click on the "Request Token" button to get started.
 Follow the instructions displayed in the widgets to obtain the token.
 The token will be saved to the user tokens directory.
-
-[1]: <https://htcondor.readthedocs.io/en/latest/getting-htcondor/from-our-repositories.html>
