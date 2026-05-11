@@ -11,13 +11,13 @@ import typing as t
 import ipywidgets as widgets
 from IPython.display import display
 
-from placement.common import (
+from placement_client.common import (
     TOKEN_FILENAME,
     WEBAPP_SERVER,
     token_stat,
     write_token,
 )
-from placement.device import DeviceClient, DeviceClientError, DEFAULT_CLIENT_ID
+from placement_client.device import DeviceClient, DeviceClientError, DEFAULT_CLIENT_ID
 
 
 class TokenFileUploadWidgets:

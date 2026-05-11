@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from placement import common
+from placement_client import common
 
 
 def _make_token(expiration: float) -> bytes:

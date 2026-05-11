@@ -4,7 +4,7 @@ pytest.importorskip("ipywidgets")
 pytest.importorskip("IPython")
 htcondor2 = pytest.importorskip("htcondor2")
 
-from placement import common, jupyter
+from placement_client import common, jupyter
 
 
 def test_jupyter_module_imports_when_optional_dependencies_exist():

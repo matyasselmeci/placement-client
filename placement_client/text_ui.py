@@ -8,8 +8,8 @@ import os
 # import time
 import typing as t
 
-from placement import common  # , device
-from placement.device import DEFAULT_CLIENT_ID, DeviceClient, DeviceClientError
+from placement_client import common  # , device
+from placement_client.device import DEFAULT_CLIENT_ID, DeviceClient, DeviceClientError
 
 
 def request_token_and_return(

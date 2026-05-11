@@ -5,7 +5,7 @@ Command-line interface for the placement client.
 import argparse
 import sys
 
-from placement import common, text_ui
+from placement_client import common, text_ui
 
 
 def get_args(argv) -> argparse.Namespace:

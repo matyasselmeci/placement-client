@@ -16,7 +16,7 @@ dev = ["black", "isort"]
 test = ["pytest"]
 
 [project.scripts]
-placement-request = "placement.cmd:main"
+placement-request = "placement_client.cmd:main"
 
 [tool.setuptools]
-packages = { find = { where = ["."], include = ["placement*"] } }
+packages = { find = { where = ["."], include = ["placement_client*"] } }
