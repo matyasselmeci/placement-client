@@ -1,1 +1,1 @@
-htcondor >= 25.0
+htcondor >= 25.8

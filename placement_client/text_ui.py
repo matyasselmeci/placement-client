@@ -7,9 +7,15 @@ import os
 
 # import time
 import typing as t
+from pathlib import Path
 
 from placement_client import common  # , device
 from placement_client.device import DEFAULT_CLIENT_ID, DeviceClient, DeviceClientError
+
+__all__ = [
+    "request_token",
+    "request_token_and_return",
+]
 
 
 def request_token_and_return(
@@ -68,7 +74,7 @@ def request_token(
     placement_server: str,
     client_id: t.Optional[str] = None,
     token_filename: str = common.TOKEN_FILENAME,
-) -> bool:
+) -> t.Optional[Path]:
     """
     Request a token and install it into the user tokens directory.
 
@@ -84,17 +90,17 @@ def request_token(
             components.
 
     Returns:
-        bool: True on success, False on failure.
+        The path to the installed token file on success, None on failure.
     """
     token_contents = request_token_and_return(placement_server, client_id)
     if not token_contents:
-        return False
+        return None
     try:
         token_path = common.write_token(
             token_filename=token_filename, token_contents=token_contents
         )
         print(f"Token has been installed at {token_path}")
-        return True
+        return token_path
     except OSError as err:
         print(f"Token failed to install: {err}")
-        return False
+        return None

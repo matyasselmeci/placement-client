@@ -17,7 +17,7 @@ from placement_client.common import (
     token_stat,
     write_token,
 )
-from placement_client.device import DeviceClient, DeviceClientError, DEFAULT_CLIENT_ID
+from placement_client.device import DEFAULT_CLIENT_ID, DeviceClient, DeviceClientError
 
 
 class TokenFileUploadWidgets:
@@ -88,11 +88,13 @@ class TokenFileUploadWidgets:
 
 
 class DeviceWidgets:
-    def __init__(self, client_id: t.Optional[str] = None):
+    def __init__(self, placement_server: str, client_id: t.Optional[str] = None):
         """
         Initialize the DeviceWidgets for requesting tokens via device flow.
 
         Arguments:
+            placement_server:
+                The URL of the placement server.
             client_id:
                 The name that the placement server should display to the user
                 when they are requesting the token.  If not provided, defaults
@@ -129,7 +131,7 @@ class DeviceWidgets:
             layout=box_layout,
         )
 
-        self.client = DeviceClient(WEBAPP_SERVER, client_id)
+        self.client = DeviceClient(placement_server, client_id)
 
     def on_request_token_click(self, button: widgets.Button):
         try:
@@ -206,5 +208,5 @@ def setup():
     """
     Set up the widgets in the demo notebook.
     """
-    wid = DeviceWidgets()
+    wid = DeviceWidgets(WEBAPP_SERVER)
     wid.display_widgets()
