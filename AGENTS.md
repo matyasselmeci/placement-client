@@ -11,7 +11,7 @@ uv venv
 uv pip install -e ".[dev,test,jupyter]"   # editable install with dev + test + jupyter extras
 ```
 
-The `htcondor2` binding is the sole runtime dependency. The Jupyter module additionally requires `ipywidgets` and `IPython` (optional, guarded by `try/except ImportError` at module level).
+The `htcondor` package (providing the `htcondor2` module) is the sole runtime dependency. The Jupyter module additionally requires `ipywidgets` and `IPython` (optional, guarded by `try/except ImportError` at module level).
 
 ## Commands
 
