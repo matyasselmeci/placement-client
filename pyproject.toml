@@ -11,7 +11,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-jupyter = ["ipywidgets"]
+jupyter = ["ipython", "ipywidgets"]
 dev = ["black", "isort"]
 test = ["pytest"]
 
