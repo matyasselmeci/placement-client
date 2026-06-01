@@ -22,10 +22,10 @@ Enterprise Linux 8 users (RHEL 8, AlmaLinux 8, Rocky 8, etc.) must first
 install HTCondor via RPM from the [HTCondor repositories][1].  After setting up
 the repositories run:
 
-      yum install python3-htcondor
+      yum install python3-condor
 
 If you have Python 3.8 or later, you can skip installing the
-`python3-htcondor` RPM.
+`python3-condor` RPM.
 
 Then, install the placement client via pip:
 

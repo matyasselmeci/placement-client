@@ -57,8 +57,8 @@ def request_token_and_return(
 
     print(
         f"Token requested; please go to\n\n\t{dc.verification_uri_complete}\n\n"
-        f'and use the code "{dc.user_code}".\n'
-        f"The code will expire at {expires_at_dt.strftime(expformat)}."
+        f'and use the code "{dc.user_code}". '
+        f"(The code will expire at {expires_at_dt.strftime(expformat)}.)"
     )
     try:
         access_token_b = dc.wait_for_token()
@@ -66,7 +66,7 @@ def request_token_and_return(
         print(f"Request to {dc.placement_server} failed: {err}")
         return None
 
-    print("Request successful!")
+    print("\nRequest successful!\n")
     return access_token_b
 
 
