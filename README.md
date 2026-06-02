@@ -20,7 +20,7 @@ For Jupyter notebook:
 
 Enterprise Linux 8 users (RHEL 8, AlmaLinux 8, Rocky 8, etc.) must first
 install HTCondor via RPM from the [HTCondor repositories][1].  After setting up
-the repositories run:
+the repositories, run:
 
       yum install python3-condor
 
@@ -75,6 +75,11 @@ project for your token.  Make your selections and click "Make Request".
 If the token request is successful, you can return to your terminal,
 where you will see a message indicating the token has been saved to disk,
 and is ready for use with HTCondor remote submission.
+
+Note: To use the token for remote submit, you must make sure the condor
+commands are configured to use the correct pool and Access Point.
+The web page will display instructions for how to set the right
+configuration variables.
 
 The token is written to your HTCondor user tokens directory
 (e.g. `~/.condor/tokens.d/` on Linux) with the filename `Placement.token`.
