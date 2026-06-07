@@ -1,8 +1,10 @@
 placement-client
 ================
 
-A Python client for obtaining Placement Tokens for use with HTCondor remote
-submission.
+A Python tool for getting and managing Placement Tokens for HTCondor remote
+placement (submit, remove, hold, etc.).  The tool is designed to make getting
+authorization convenient for users doing work with the command-line,
+with Python scripts, or in Jupyter notebooks.
 
 
 
@@ -21,16 +23,24 @@ For Jupyter notebook:
 
 ### Installation
 
-Enterprise Linux 8 users (RHEL 8, AlmaLinux 8, Rocky 8, etc.) must first
+
+#### Enterprise Linux 8 users
+
+Enterprise Linux 8 users (RHEL 8, AlmaLinux 8, Rocky 8, etc.) cannot install
+the HTCondor Python bindings via `pip` and must first
 install HTCondor via RPM from the [HTCondor repositories][1].  After setting up
 the repositories, run:
 
       yum install python3-condor
 
-If you have Python 3.8 or later, you can skip installing the
-`python3-condor` RPM.
+Then, you can install `placement-client` via `pip` as described below.
 
-Then, install the placement client via pip:
+[1]: <https://htcondor.readthedocs.io/en/latest/getting-htcondor/from-our-repositories.html>
+
+
+#### All users
+
+Install `placement-client` via `pip` as follows:
 
       pip install git+https://github.com/matyasselmeci/placement-client.git
 
@@ -42,9 +52,6 @@ user interface.
 To install the Jupyter notebook interface, specify the `jupyter` extra as follows:
 
       pip install "placement-client[jupyter]@git+https://github.com/matyasselmeci/placement-client.git"
-
-[1]: <https://htcondor.readthedocs.io/en/latest/getting-htcondor/from-our-repositories.html>
-
 
 
 Usage
@@ -108,8 +115,8 @@ The module has two sets of widgets:
    to the user tokens directory.
 
 - `DeviceWidgets`: for requesting a new token via the device authorization
-   flow.  This is the same workflow as the command-line tool, but in a
-   Jupyter widget form.
+   flow.  This is the same workflow as the `placement-request` command-line
+   tool, but in a Jupyter widget form.
 
 Use the `TokenFileUploadWidgets` as follows:
 
@@ -145,10 +152,11 @@ The URL to visit will be printed to the terminal, like with the
 command-line tool.  Follow the instructions above to obtain the token,
 and the path to the installed token file will be returned on success, or
 `None` on failure.
+
 The token is written to your HTCondor user tokens directory
 (e.g. `~/.condor/tokens.d/` on Linux) with the filename `Placement.token`.
 
-Alternatively, you can use the `request_token_and_return` function to obtain the
+Alternatively, you can use the `request_token_and_return` function to get the
 token contents as `bytes`, without installing it to disk:
 
 ```python
@@ -191,8 +199,8 @@ token_path = write_token(token_filename, token_contents)
 ```
 
 where `token_filename` is the name of a file to write the token to.
-It must not contain any path components, and the token will be written to the user tokens
-directory (e.g. `~/.condor/tokens.d/` on Linux).
+It must not contain any path components, and the token will be written to the
+user tokens directory (e.g. `~/.condor/tokens.d/` on Linux).
 The path to the installed token file will be returned on success,
 or an `OSError` will be raised on failure.
 
