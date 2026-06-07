@@ -4,8 +4,11 @@ placement-client
 A Python client for obtaining Placement Tokens for use with HTCondor remote
 submission.
 
+
+
 Installation
 ------------
+
 
 ### Requirements
 
@@ -42,8 +45,11 @@ To install the Jupyter notebook interface, specify the `jupyter` extra as follow
 
 [1]: <https://htcondor.readthedocs.io/en/latest/getting-htcondor/from-our-repositories.html>
 
+
+
 Usage
 -----
+
 
 ### Command-line usage
 
@@ -84,38 +90,45 @@ configuration variables.
 The token is written to your HTCondor user tokens directory
 (e.g. `~/.condor/tokens.d/` on Linux) with the filename `Placement.token`.
 
-#### Possible errors
 
-The following are common errors you may encounter during the token request process:
+### Jupyter usage
 
-- "Connection refused" or some other connection error: this indicates that
-  the client was unable to connect to the Placement Server.  Check that you
-  have the correct hostname for the Placement Server, and that there are no
-  network issues preventing you from connecting to it.
+To use the Jupyter widget interface, you must have the ipywidgets package
+installed and be running in a Jupyter notebook environment.
+Then, import the `placement_client.jupyter` module:
 
-- "Server responds device code expired": this indicates that the code you were
-  given has expired.  This can happen if you wait too long to enter the code
-  on the web page, or if there is a delay in the token request process.  If
-  this happens, run the `placement-request` command again to get a new
-  code.
+```python
+from placement_client import jupyter
+```
 
-- "User denied token request": this occurs if you click "Cancel" on the
-  Placement Server web page after entering the code or selecting permissions
-  and project.  If this happens, you must run the `placement-request` command
-  again to get a new code.
+The module has two sets of widgets:
 
-- "Permission denied", "No such file or directory", "No space left on device",
-  or some other file system error: this indicates that the client was unable
-  to write the token to disk.  Check that you have write permissions to the
-  user tokens directory (e.g. `~/.condor/tokens.d/` on Linux), and that there
-  is sufficient disk space or quota.
+- `TokenFileUploadWidgets`: for uploading an existing token file to the
+   notebook.  Once the file is uploaded, the token will be installed
+   to the user tokens directory.
 
-- "Unknown failure from the server", "Unexpected response from the server",
-  or some other error message indicating an unexpected failure: this
-  indicates that something went wrong on the server side during the token
-  request process.  Contact your HTCondor administrator or facilitator
-  with the error message and information about which server you were trying
-  to contact, when the error occurred, and any other relevant details.
+- `DeviceWidgets`: for requesting a new token via the device authorization
+   flow.  This is the same workflow as the command-line tool, but in a
+   Jupyter widget form.
+
+Use the `TokenFileUploadWidgets` as follows:
+
+```python
+widgets = jupyter.TokenFileUploadWidgets()
+widgets.display_widgets()
+```
+
+Use the `DeviceWidgets` as follows:
+
+```python
+widgets = jupyter.DeviceWidgets("placement-server.example.com")
+widgets.display_widgets()
+```
+
+Click on the "Request Token" button to get started.
+Follow the instructions displayed in the widgets to obtain the token.
+The token will be saved to the user tokens directory.
+
 
 ### Library usage (interactive)
 
@@ -183,9 +196,54 @@ directory (e.g. `~/.condor/tokens.d/` on Linux).
 The path to the installed token file will be returned on success,
 or an `OSError` will be raised on failure.
 
-#### Possible errors
 
-The following are common errors you may encounter during the token request process:
+
+Troubleshooting
+---------------
+
+The following sections describe errors you may encounter during the
+token request process.
+
+
+### Command line errors
+
+You may encounter these errors when using the command-line client
+`placement-request`:
+
+- "Connection refused" or some other connection error: this indicates that
+  the client was unable to connect to the Placement Server.  Check that you
+  have the correct hostname for the Placement Server, and that there are no
+  network issues preventing you from connecting to it.
+
+- "Server responds device code expired": this indicates that the code you were
+  given has expired.  This can happen if you wait too long to enter the code
+  on the web page, or if there is a delay in the token request process.  If
+  this happens, run the `placement-request` command again to get a new
+  code.
+
+- "User denied token request": this occurs if you click "Cancel" on the
+  Placement Server web page after entering the code or selecting permissions
+  and project.  If this happens, you must run the `placement-request` command
+  again to get a new code.
+
+- "Permission denied", "No such file or directory", "No space left on device",
+  or some other file system error: this indicates that the client was unable
+  to write the token to disk.  Check that you have write permissions to the
+  user tokens directory (e.g. `~/.condor/tokens.d/` on Linux), and that there
+  is sufficient disk space or quota.
+
+- "Unknown failure from the server", "Unexpected response from the server",
+  or some other error message indicating an unexpected failure: this
+  indicates that something went wrong on the server side during the token
+  request process.  Contact your HTCondor administrator or facilitator
+  with the error message and information about which server you were trying
+  to contact, when the error occurred, and any other relevant details.
+
+
+### Jupyter/Library errors
+
+You may encounter these errors when using the Jupyter widget or the
+`placement_client` library:
 
 - `DeviceClientInitialRequestError`: this indicates that something went wrong
   during the initial request to the server for the device code.
@@ -214,42 +272,3 @@ The following are common errors you may encounter during the token request proce
   disk.  Check that you have write permissions to the user tokens directory
   (e.g. `~/.condor/tokens.d/` on Linux), and that there is sufficient disk
   space or quota.
-
-
-### Jupyter usage
-
-To use the Jupyter widget interface, you must have the ipywidgets package
-installed and be running in a Jupyter notebook environment.
-Then, import the `placement_client.jupyter` module:
-
-```python
-from placement_client import jupyter
-```
-
-The module has two sets of widgets:
-
-- `TokenFileUploadWidgets`: for uploading an existing token file to the
-   notebook.  Once the file is uploaded, the token will be installed
-   to the user tokens directory.
-
-- `DeviceWidgets`: for requesting a new token via the device authorization
-   flow.  This is the same workflow as the command-line tool, but in a
-   Jupyter widget form.
-
-Use the `TokenFileUploadWidgets` as follows:
-
-```python
-widgets = jupyter.TokenFileUploadWidgets()
-widgets.display_widgets()
-```
-
-Use the `DeviceWidgets` as follows:
-
-```python
-widgets = jupyter.DeviceWidgets("placement-server.example.com")
-widgets.display_widgets()
-```
-
-Click on the "Request Token" button to get started.
-Follow the instructions displayed in the widgets to obtain the token.
-The token will be saved to the user tokens directory.
