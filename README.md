@@ -110,20 +110,18 @@ from placement_client import jupyter
 
 The module has two sets of widgets:
 
-- `TokenFileUploadWidgets`: for uploading an existing token file to the
-   notebook.  Once the file is uploaded, the token will be installed
-   to the user tokens directory.
+- `DeviceWidgets` for requesting a new token via the
+  device authorization flow
+- `TokenFileUploadWidgets`: for uploading an existing token file to
+  a remote notebook
 
-- `DeviceWidgets`: for requesting a new token via the device authorization
-   flow.  This is the same workflow as the `placement-request` command-line
-   tool, but in a Jupyter widget form.
 
-Use the `TokenFileUploadWidgets` as follows:
+#### DeviceWidgets
 
-```python
-widgets = jupyter.TokenFileUploadWidgets()
-widgets.display_widgets()
-```
+DeviceWidgets is a set of widgets for requesting a new token via the
+"device authorization flow."
+This is the same workflow as the `placement-request` command-line
+tool, but in a Jupyter widget form.
 
 Use the `DeviceWidgets` as follows:
 
@@ -135,6 +133,27 @@ widgets.display_widgets()
 Click on the "Request Token" button to get started.
 Follow the instructions displayed in the widgets to obtain the token.
 The token will be saved to the user tokens directory.
+
+
+#### TokenFileUploadWidgets
+
+TokenFileUploadWidgets is a set of widgets for uploading an existing token file
+to a remote notebook.  This is useful if you obtained a token via visiting
+the placement server and downloading it, and now want to use it in a remote
+notebook (e.g. on a JupyterHub deployment).
+
+Use the `TokenFileUploadWidgets` as follows:
+
+```python
+widgets = jupyter.TokenFileUploadWidgets()
+widgets.display_widgets()
+```
+
+Clicking on the "Click to select a token to upload" button will open a file
+selection dialog matching `*.tkn` or `*.token` files.
+Select the token file you wish to upload.
+Once the file is uploaded, the token will be installed
+to the user tokens directory.
 
 
 ### Library usage (interactive)
