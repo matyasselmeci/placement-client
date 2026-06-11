@@ -42,7 +42,7 @@ Then, you can install `placement-client` via `pip` as described below.
 
 Install `placement-client` via `pip` as follows:
 
-      pip install git+https://github.com/matyasselmeci/placement-client.git
+      pip install git+https://github.com/htcondor/placement-client.git
 
 
 You will have one new command line tool, `placement-request`,
@@ -51,7 +51,7 @@ user interface.
 
 To install the Jupyter notebook interface, specify the `jupyter` extra as follows:
 
-      pip install "placement-client[jupyter]@git+https://github.com/matyasselmeci/placement-client.git"
+      pip install "placement-client[jupyter]@git+https://github.com/htcondor/placement-client.git"
 
 
 Usage
