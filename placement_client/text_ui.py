@@ -56,8 +56,8 @@ def request_token_and_return(
         expformat = "%Y-%m-%d %H:%M:%S"
 
     print(
-        f"Token requested; please go to\n\n\t{dc.verification_uri_complete}\n\n"
-        f'and use the code "{dc.user_code}". '
+        f"Token requested; please go to\n\n{dc.verification_uri_complete}\n\n"
+        f'and use the code "{dc.user_code}".\n'
         f"(The code will expire at {expires_at_dt.strftime(expformat)}.)"
     )
     try:
