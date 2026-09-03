@@ -4,8 +4,14 @@ Command-line interface for the placement client.
 
 import argparse
 import sys
+import traceback
 
 from placement_client import common, text_ui
+
+
+def print_failure_message():
+    print("Token NOT created.", file=sys.stderr)
+    print("You will have to re-run the program to get a token.", file=sys.stderr)
 
 
 def get_args(argv) -> argparse.Namespace:
@@ -43,10 +49,22 @@ def main(argv=()) -> int:
         success = text_ui.request_token(
             placement_server=args.placement_server, token_filename=token_filename
         )
-        return 0 if success else 1
+        if success:
+            return 0
+        else:
+            print_failure_message()
+            return 1
     except KeyboardInterrupt:
-        print("\nAborted by user.", file=sys.stderr)
+        print("\nRequest interrupted.")
+        print_failure_message()
         return 130
+    except Exception as err:
+        # Print the exception traceback but then also let the user know that
+        # they have to re-run the program to get a token.
+        traceback.print_exc()
+        print(f"\nError: {err}", file=sys.stderr)
+        print_failure_message()
+        return 1
 
 
 if __name__ == "__main__":
